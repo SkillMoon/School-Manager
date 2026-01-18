@@ -1,9 +1,14 @@
-from tests.samples import *
-from school_manager.storage_handler import *
+from school_manager.managers import *
+
 if __name__ == '__main__':
-    # teacher_list = [report_card, report_card2]
-    teacher_list = []
-    ReportCardFH.load_file(ReportCard,teacher_list)
-    for teacher in teacher_list:
-        print(teacher.student)
-    # print(report_card.to_dict())
+    std_manager = StudentManager()
+    class_manager = ClassManager()
+    teacher_manager = TeacherManager()
+    lesson_manager = LessonManager()
+    rc_manager = ReportCardManager()
+
+    rc_manager.delete()
+    # lesson_manager.edit()
+    # class_manager.show_students()
+    # std_manager.delete()
+    # teacher_manager.delete()

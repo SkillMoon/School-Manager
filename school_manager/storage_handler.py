@@ -30,14 +30,14 @@ class StudentFH(FileHandler):
                     row['last_name'],
                     row['age'],
                     row['grade_level'],
-                    row['class_name'],
+                    row['class_id'],
                     )
                 )
 
     @staticmethod
     def save_to_file(student_list):
         with open('data/students.csv', 'w', newline='') as file:
-            headers = ['student_id', 'national_id', 'first_name','last_name', 'age', 'grade_level', 'class_name']
+            headers = ['student_id', 'national_id', 'first_name','last_name', 'age', 'grade_level', 'class_id']
             writer = DictWriter(file, fieldnames=headers)
             writer.writeheader()
             for student in student_list:
@@ -83,7 +83,6 @@ class ClassFH(FileHandler):
                     row['class_id'],
                     row['class_name'],
                     row['capacity'],
-                    row['lessons'].split(','),
                     row['students'].split(','),
                     row['teachers'].split(',')
                     )
@@ -92,7 +91,7 @@ class ClassFH(FileHandler):
     @staticmethod
     def save_to_file(class_list):
         with open('data/classes.csv', 'w', newline='') as file:
-            headers = ['class_id', 'class_name', 'capacity','lessons', 'students', 'teachers']
+            headers = ['class_id', 'class_name', 'capacity', 'students', 'teachers']
             writer = DictWriter(file, fieldnames=headers)
             writer.writeheader()
             for item in class_list:
@@ -130,7 +129,7 @@ class ReportCardFH(FileHandler):
                 rc_list.append(
                 cls(
                     row['student'],
-                    row['grades'],
+                    row['grades'].split(','),
                     )
                 )
 

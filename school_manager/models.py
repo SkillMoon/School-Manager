@@ -24,15 +24,19 @@ class BaseModel(ABC):
     def to_dict(self):
         pass
 class Student(BaseUser, BaseModel):
-    def __init__(self, student_id, national_id,first_name, last_name, age, grade_level, class_name):
+    def __init__(self, student_id, national_id,first_name, last_name, age, grade_level, class_id):
         self.student_id = student_id
         super().__init__(national_id,first_name,last_name,age)
         self.grade_level = grade_level
-        self.class_name = class_name
+        self.class_id = class_id
 
 
     def to_dict(self):
         return self.__dict__
+
+    def __str__(self):
+        return (f'- Student : {self.student_id}\n Name : {self.first_name} {self.last_name}  |  '
+                f'National ID : {self.national_id}  |  Age : {self.age}  |  Grade Level : {self.grade_level}  |  Class : {self.class_id.class_name}')
 
 class Teacher(BaseUser, BaseModel):
     def __init__(self, personnel_code, national_id, first_name, last_name, age, lessons, classes):
@@ -40,6 +44,7 @@ class Teacher(BaseUser, BaseModel):
         super().__init__(national_id, first_name, last_name,age)
         self.lessons = lessons
         self.classes = classes
+
 
     def to_dict(self):
         return {
@@ -52,14 +57,15 @@ class Teacher(BaseUser, BaseModel):
             'classes' : Teacher.to_str(self.classes),
         }
 
+    def __str__(self):
+        return (f'- Teacher : {self.personnel_code}\n Name : {self.first_name} {self.last_name}  |  '
+                f'National ID : {self.national_id}  |  Age : {self.age}  |  Lessons : {Teacher.to_str(self.lessons)}  |  Class : {Teacher.to_str(self.classes)}')
+
 class Class(BaseModel):
-    def __init__(self, class_id, class_name, capacity, lessons=None, students=None, teachers=None):
+    def __init__(self, class_id, class_name, capacity, students=None, teachers=None):
         self.class_id = class_id
         self.class_name = class_name
         self.capacity = capacity
-        if lessons is None:
-            lessons = []
-        self.lessons = lessons
         if students is None:
             students = []
         self.students = students
@@ -72,10 +78,12 @@ class Class(BaseModel):
             'class_id' : self.class_id,
             'class_name' : self.class_name,
             'capacity' : self.capacity,
-            'lessons' : Class.to_str(self.lessons),
             'students' : Class.to_str(self.students),
             'teachers' : Class.to_str(self.teachers),
         }
+
+    def __str__(self):
+        return f'- Class : {self.class_id}\n Name : {self.class_name}  |  Capacity : {self.capacity}  | Students : {len(self.students)} | Teachers : {len(self.teachers)}'
 
 class Lesson(BaseModel):
     def __init__(self, lesson_id, lesson_name, units):
@@ -86,12 +94,18 @@ class Lesson(BaseModel):
     def to_dict(self):
         return self.__dict__
 
+    def __str__(self):
+        return f'- Lesson {self.lesson_id}\n Name : {self.lesson_name}  |  Units : {self.units}'
+
 class ReportCard(BaseModel):
     def __init__(self, student, grades):
         self.student = student
         self.grades = grades
 
     def to_dict(self):
-        return self.__dict__
+        return {
+            'student' : self.student,
+            'grades' : ReportCard.to_str(self.grades),
+        }
 
 
