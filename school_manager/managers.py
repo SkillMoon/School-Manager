@@ -1,5 +1,4 @@
-from dataclasses import fields
-
+from school_manager.Validator import StudentValidator
 from school_manager.storage_handler import *
 from tests.samples import *
 from copy import deepcopy
@@ -53,12 +52,34 @@ class StudentManager(Manager):
 
     def add(self):
         student_id = input("Enter Student ID: ")
+        # student_id = StudentValidator.validate_id(student_id, self.student_list, obj_type='student',is_required=True)
+        if student_id is None:
+            return
         national_id = input("Enter National ID: ")
+        # national_id = StudentValidator.validate_id(national_id, self.student_list, obj_type='student', is_required=False, type='national')
+        if national_id is None:
+            return
         first_name = input("Enter First Name: ")
+        # first_name = StudentValidator.validate_name(first_name, is_required=False)
+        if first_name is None:
+            return
         last_name = input("Enter Last Name: ")
+        # last_name = StudentValidator.validate_name(last_name, is_required=True)
+        if last_name is None:
+            return
         age = input("Enter Age: ")
+        # age = StudentValidator.validate_age(age, 10, 19, is_required=True)
+        if age is None:
+            return
         grade_level = input("Enter Grade Level: ")
+        # grade_level = StudentValidator.validate_gl(grade_level, is_required=False)
+        if grade_level is None:
+            return
         class_id = input("Enter Class ID: ")
+        class_id = StudentValidator.validate_cid(class_id, [int(cls.class_id) for cls in self.class_list], is_required=False)
+        if class_id is None:
+            return
+        input('press any key to continue')
         Manager.set_to_id('class_id', 'class_id', self.student_list, self.class_list)
         self.student_list.append(
             Student(

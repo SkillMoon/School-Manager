@@ -7,8 +7,8 @@ if __name__ == '__main__':
     lesson_manager = LessonManager()
     rc_manager = ReportCardManager()
 
-    rc_manager.delete()
+    # rc_manager.delete()
     # lesson_manager.edit()
     # class_manager.show_students()
-    # std_manager.delete()
+    std_manager.add()
     # teacher_manager.delete()
