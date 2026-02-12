@@ -1,79 +1,89 @@
-from abc import ABC, abstractmethod
-
-class Validator(ABC):
-    pass
-class UserBasicValidator(Validator):
+from abc import ABC
+BAN_CHARS_FOR_STR = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '!', '@', '#',
+             '$', '%', '^', '&', '*', '(', ')', '_', '-''+', '=', '[', ']',
+             '{', '}', ';', ':', '\'', '\"', '|', '/', '\\', '?', '.', ',',
+             '<', '>']
+BAN_CHARS_FOR_INT = ['!', '@', '#',
+             '$', '%', '^', '&', '*', '(', ')', '_', '-''+', '=', '[', ']',
+             '{', '}', ';', ':', '\'', '\"', '|', '/', '\\', '?', '.', ',',
+             '<', '>']
+class UserBasicValidator(ABC):
     @staticmethod
-    def validate_id(id, object_list, obj_type,is_required=False, type='id'):
+    def validate_id(id, object_list, obj_type,is_required=False, is_key=True, type='id'):
         if is_required:
             id = str(id).strip()
             if not id:
                 print('This field is required')
-                id = None
-                return
+                return None
             for i in id:
-                if i.isalpha():
+                if i.isalpha() or i in BAN_CHARS_FOR_INT:
                     print('id must be a number')
                     return None
-            if type == 'id':
-                if obj_type == 'student':
-                    for student in object_list:
-                        if student.student_id == id:
-                            print('Student ID already exists')
-                            id = None
-                            return
-                elif obj_type == 'teacher':
-                    for teacher in object_list:
-                        if teacher.personnel_code == id:
-                            print('Personnel Code already exists')
-                            id = None
-                            return
-                else:
-                    print('Invalid object type')
-                    return
+            if is_key:
+                if type == 'id':
+                    if obj_type == 'student':
+                        for student in object_list:
+                            if student.student_id == id:
+                                print('Student ID already exists')
+                                return None
+                    elif obj_type == 'teacher':
+                        for teacher in object_list:
+                            if teacher.personnel_code == id:
+                                print('Personnel Code already exists')
+                                return None
+                    else:
+                        print('Invalid object type')
+                        return None
             if type == 'national':
                 if len(id) != 10:
                     print('National ID must be 10 digits')
-                    id = None
-                    return
+                    return None
             if type == 'id':
                 id = int(id)
         else:
             if id:
                 for i in id:
-                    if i.isalpha():
+                    if i.isalpha() or i in BAN_CHARS_FOR_STR:
                         print('id must be a number')
                         return None
-                    if type == 'national':
-                        if len(id) != 10:
-                            print('National ID must be 10 digits')
-                            id = None
-                            return
+                if type == 'national':
+                    if len(id) != 10:
+                        print('National ID must be 10 digits')
+                        return None
+                if is_key:
+                    if type == 'id':
+                        if obj_type == 'student':
+                            for student in object_list:
+                                if student.student_id == id:
+                                    print('Student ID already exists')
+                                    return None
+                        elif obj_type == 'teacher':
+                            for teacher in object_list:
+                                if teacher.personnel_code == id:
+                                    print('Personnel Code already exists')
+                                    return None
+                        else:
+                            print('Invalid object type')
+                            return None
         return id
 
     @staticmethod
     def validate_name(name, is_required=False):
-        ban_chars = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '!', '@', '#',
-                     '$', '%', '^', '&', '*', '(', ')', '_', '-''+', '=', '[', ']',
-                     '{', '}', ';', ':', '\'', '\"', '|', '/', '\\', '?', '.', ',',
-                     '<', '>']
+
         if is_required:
             name = str(name).strip()
             if not name:
                 print("Name is required")
-                name = None
-                return
-            for char in ban_chars:
+                return None
+            for char in BAN_CHARS_FOR_STR:
                 if char in name:
                     print("cant use numbers and signs in name")
-                    name = None
-                    return
+                    return None
         else:
-            for char in ban_chars:
+            for char in BAN_CHARS_FOR_STR:
                 if char in name:
                     print("cant use numbers and signs in name")
-                    name = None
-                    return
+                    return None
         return name
 
     @staticmethod
@@ -82,28 +92,25 @@ class UserBasicValidator(Validator):
             age = str(age).strip()
             if not age:
                 print("Age is required")
-                age = None
-                return
-            if age.isalpha():
-                print('Age must be a number')
-                age = None
-                return
+                return None
+            for i in age:
+                if i.isalpha() or i in BAN_CHARS_FOR_INT:
+                    print('Age must be a number')
+                    return None
             age = int(age)
-            if age < min or age > max:
+            if age not in range(min, max + 1):
                 print(f'Age must be between {min} and {max}')
-                age = None
-                return
+                return None
         else:
             if age:
-                if age.isalpha():
-                    print('Age must be a number')
-                    age = None
-                    return
+                for i in age:
+                    if i.isalpha() or i in BAN_CHARS_FOR_INT:
+                        print('Age must be a number')
+                        return None
                 age = int(age)
                 if age not in range(min, max + 1):
                     print(f'Age must be between {min} and {max}')
-                    age = None
-                    return
+                    return None
         return age
 
 class StudentValidator(UserBasicValidator):
@@ -113,31 +120,26 @@ class StudentValidator(UserBasicValidator):
             grade_level = str(grade_level).strip()
             if not grade_level:
                 print("Grade level is required")
-                grade_level = None
-                return
+                return None
             for i in grade_level:
-                if i.isalpha():
+                if i.isalpha() or i in BAN_CHARS_FOR_INT:
                     print('Grade level must be a number')
-                    grade_level = None
-                    return
+                    return None
             grade_level = int(grade_level)
             if grade_level not in range(10,13):
                 print(f'Grade level must be between 10 and 12')
-                grade_level = None
-                return
+                return None
         else:
             if grade_level:
                 grade_level = str(grade_level).strip()
                 for i in grade_level:
-                    if i.isalpha():
+                    if i.isalpha() or i in BAN_CHARS_FOR_INT:
                         print('Grade level must be a number')
-                        grade_level = None
-                        return
+                        return None
                 grade_level = int(grade_level)
                 if grade_level not in range(10, 13):
                     print(f'Grade level must be between 10 and 12')
-                    grade_level = None
-                    return
+                    return None
         return grade_level
 
     @staticmethod
@@ -146,29 +148,263 @@ class StudentValidator(UserBasicValidator):
             class_id = str(class_id).strip()
             if not class_id:
                 print("Class ID is required")
-                class_id = None
-                return
+                return None
             for i in class_id:
-                if i.isalpha():
+                if i.isalpha() or i in BAN_CHARS_FOR_INT:
                     print('Class ID must be a number')
-                    class_id = None
-                    return
+                    return None
             class_id = int(class_id)
             if class_id not in class_list:
                 print(f'Class ID {class_id} is not in the list of available classes')
-                class_id = None
-                return
+                return None
         else:
             if class_id:
                 class_id = str(class_id).strip()
                 for i in class_id:
-                    if i.isalpha():
+                    if i.isalpha() or i in BAN_CHARS_FOR_INT:
                         print('Class ID must be a number')
-                        class_id = None
-                        return
+                        return None
                 class_id = int(class_id)
                 if class_id not in class_list:
                     print(f'Class ID {class_id} is not in the list of available classes')
-                    class_id = None
-                    return
+                    return None
         return class_id
+class TeacherValidator(UserBasicValidator):
+    @staticmethod
+    def validate_lid(lesson_id, lesson_list, is_required=False, is_key=True):
+        if is_required:
+            lesson_id[0] = str(lesson_id[0].strip())
+            if not lesson_id[0]:
+                print('This field is required')
+                return None
+            for i in lesson_id[0]:
+                if i.isalpha() or i in BAN_CHARS_FOR_INT:
+                    print('Lesson ID must be a number')
+                    return None
+            lesson_id[0] = int(lesson_id[0])
+            if is_key:
+                if lesson_id[0] not in lesson_list:
+                    print(f'This lesson id does not belong to any lessons')
+                    return None
+        else:
+            if lesson_id[0]:
+                for i in lesson_id[0]:
+                    if i.isalpha() or i in BAN_CHARS_FOR_INT:
+                        print('Lesson ID must be a number')
+                        return None
+                if is_key:
+                    if lesson_id[0] not in lesson_list:
+                        print(f'This lesson id does not belong to any lessons')
+                        return None
+        return lesson_id
+
+    @staticmethod
+    def validate_cid(class_id, class_list, is_required=False, is_key=True):
+        if is_required:
+            class_id[0] = str(class_id[0].strip())
+            if not class_id[0]:
+                print('This field is required')
+                return None
+            for i in class_id[0]:
+                if i.isalpha() or i in BAN_CHARS_FOR_INT:
+                    print('Class ID must be a number')
+                    return None
+            class_id[0] = int(class_id[0])
+            if is_key:
+                if class_id[0] not in class_list:
+                    print(f'Class ID {class_id[0]} is not in the list of available classes')
+                    return None
+        else:
+            if class_id[0]:
+                class_id[0] = str(class_id[0].strip())
+                for i in class_id[0]:
+                    if i.isalpha() or i in BAN_CHARS_FOR_INT:
+                        print('Class ID must be a number')
+                        return None
+                class_id[0] = int(class_id[0])
+                if is_key:
+                    if class_id[0] not in class_list:
+                        print(f'Class ID {class_id[0]} is not in the list of available classes')
+                        return None
+        return  class_id
+
+class ClassValidator:
+
+    @staticmethod
+    def validate_cid(cid, class_list, is_required=False, is_key=True):
+        if is_required:
+            cid = str(cid).strip()
+            if not cid:
+                print('Class ID is required')
+                return None
+            for i in cid:
+                if i.isalpha() or i in BAN_CHARS_FOR_INT:
+                    print('Class ID must be a number')
+                    return None
+            cid = int(cid)
+            if is_key:
+                for cls in class_list:
+                    if int(cls.class_id) == cid:
+                        print('This ID already exists')
+                        return None
+        else:
+            if cid:
+                cid = str(cid).strip()
+                for i in cid:
+                    if i.isalpha() or i in BAN_CHARS_FOR_INT:
+                        print('Class ID must be a number')
+                        return None
+                cid = int(cid)
+                if is_key:
+                    for cls in class_list:
+                        if int(cls.class_id) == cid:
+                            print('This ID already exists')
+                            return None
+        return cid
+
+    @staticmethod
+    def validate_cname(class_name, is_required=False):
+        if is_required:
+            class_name = str(class_name).strip()
+            if not class_name:
+                print('Class Name is required')
+                return None
+            for char in class_name:
+                if char in BAN_CHARS_FOR_STR:
+                    print('can\'t use numbers and signs in name')
+                    return None
+        else:
+            if class_name:
+                class_name = str(class_name).strip()
+                for char in class_name:
+                    if char in BAN_CHARS_FOR_STR:
+                        print('can\'t use numbers and signs in name')
+                        return None
+        return class_name
+
+    @staticmethod
+    def validate_capacity(capacity, is_required=False):
+        if is_required:
+            capacity = str(capacity).strip()
+            if not capacity:
+                print('capacity is required')
+                return None
+            for i in capacity:
+                if i.isalpha() or i in BAN_CHARS_FOR_INT:
+                    print('Capacity must be a number')
+                    return None
+            capacity = int(capacity)
+        else:
+            if capacity:
+                for i in capacity:
+                    if i.isalpha():
+                        print('Capacity must be a number')
+                        return None
+                capacity = int(capacity)
+        return capacity
+
+class LessonValidator:
+    @staticmethod
+    def validate_lid(lid, lessons_list,is_required=False, is_key=True):
+        if is_required:
+            lid = str(lid).strip()
+            if not lid:
+                print('Lesson ID is required')
+                return None
+            for i in lid:
+                if i.isalpha() or i in BAN_CHARS_FOR_INT:
+                    print('Lesson ID must be a number')
+                    return None
+            lid = int(lid)
+            if is_key:
+                for lesson in lessons_list:
+                    if int(lesson.lesson_id) == lid:
+                        print('Lesson ID already exists')
+                        return None
+        else:
+            if lid:
+                for i in lid:
+                    if i.isalpha() or i in BAN_CHARS_FOR_INT:
+                        print('Lesson ID must be a number')
+                        return None
+                lid = int(lid)
+                if is_key:
+                    for lesson in lessons_list:
+                        if int(lesson.lesson_id) == lid:
+                            print('Lesson ID already exists')
+                            return None
+        return lid
+    @staticmethod
+    def validate_lname(lesson_name, is_required=False):
+        if is_required:
+            lesson_name = str(lesson_name).strip()
+            if not lesson_name:
+                print('lesson name is required')
+                return None
+            for char in lesson_name:
+                if char in BAN_CHARS_FOR_STR:
+                    print('can\'t use numbers and signs in name')
+                    return None
+        else:
+            lesson_name = str(lesson_name).strip()
+            for char in lesson_name:
+                if char in BAN_CHARS_FOR_STR:
+                    print('can\'t use numbers and signs in name')
+                    return None
+        return lesson_name
+
+    @staticmethod
+    def validate_units(units, is_required=False):
+        if is_required:
+            units = str(units).strip()
+            if not units:
+                print('This field is required')
+                return None
+            for i in units:
+                if i.isalpha() or i in BAN_CHARS_FOR_INT:
+                    print('Units must be a number')
+                    return None
+            units = int(units)
+            if units not in range(1, 9):
+                print('Units must be between 1 and 8')
+                return None
+        else:
+            if units:
+                for i in units:
+                    if i.isalpha() or i in BAN_CHARS_FOR_INT:
+                        print('Units must be a number')
+                        return None
+                units = int(units)
+                if units not in range(1, 9):
+                    print('Units must be between 1 and 8')
+                    return None
+        return units
+
+class RCValidator:
+    @staticmethod
+    def validate_sid(student_id):
+        student_id = str(student_id).strip()
+        if not student_id:
+            print('Student ID is required')
+            return None
+        for i in student_id:
+            if i.isalpha() or i in BAN_CHARS_FOR_INT:
+                print('Student ID must be a number')
+                return None
+        return student_id
+
+    @staticmethod
+    def validate_grade(grade):
+        grade = str(grade).strip()
+        if not grade:
+            print('This field is required')
+            return None
+        for i in grade:
+            if i.isalpha() or i in BAN_CHARS_FOR_INT:
+                print('Grade must be a number')
+                return None
+        grade = float(grade)
+        if grade <= -0.9 or grade >= 20.1:
+            print('Grade must be between 1 and 20')
+            return None
+        return grade

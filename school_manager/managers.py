@@ -1,6 +1,6 @@
-from school_manager.Validator import StudentValidator
+from school_manager.Validator import StudentValidator, TeacherValidator, ClassValidator, LessonValidator, RCValidator
 from school_manager.storage_handler import *
-from tests.samples import *
+from school_manager.models import *
 from copy import deepcopy
 
 class Manager(ABC):
@@ -52,31 +52,31 @@ class StudentManager(Manager):
 
     def add(self):
         student_id = input("Enter Student ID: ")
-        # student_id = StudentValidator.validate_id(student_id, self.student_list, obj_type='student',is_required=True)
+        student_id = StudentValidator.validate_id(student_id, self.student_list, obj_type='student',is_required=True, is_key=True)
         if student_id is None:
             return
         national_id = input("Enter National ID: ")
-        # national_id = StudentValidator.validate_id(national_id, self.student_list, obj_type='student', is_required=False, type='national')
+        national_id = StudentValidator.validate_id(national_id, self.student_list, obj_type='student', is_required=False, type='id')
         if national_id is None:
             return
         first_name = input("Enter First Name: ")
-        # first_name = StudentValidator.validate_name(first_name, is_required=False)
+        first_name = StudentValidator.validate_name(first_name, is_required=False)
         if first_name is None:
             return
         last_name = input("Enter Last Name: ")
-        # last_name = StudentValidator.validate_name(last_name, is_required=True)
+        last_name = StudentValidator.validate_name(last_name, is_required=True)
         if last_name is None:
             return
         age = input("Enter Age: ")
-        # age = StudentValidator.validate_age(age, 10, 19, is_required=True)
+        age = StudentValidator.validate_age(age, 10, 19, is_required=True)
         if age is None:
             return
         grade_level = input("Enter Grade Level: ")
-        # grade_level = StudentValidator.validate_gl(grade_level, is_required=False)
+        grade_level = StudentValidator.validate_gl(grade_level, is_required=True)
         if grade_level is None:
             return
         class_id = input("Enter Class ID: ")
-        class_id = StudentValidator.validate_cid(class_id, [int(cls.class_id) for cls in self.class_list], is_required=False)
+        class_id = StudentValidator.validate_cid(class_id, [int(cls.class_id) for cls in self.class_list], is_required=True)
         if class_id is None:
             return
         input('press any key to continue')
@@ -89,6 +89,7 @@ class StudentManager(Manager):
         StudentFH.save_to_file(self.student_list)
         Manager.set_to_reference('class_id', 'class_id', self.student_list, self.class_list)
         self.set_class(student_id)
+        return True
 
     def set_class(self, student_id):
         if '' in self.student_list[-1].class_id.students:
@@ -100,18 +101,42 @@ class StudentManager(Manager):
     def edit(self):
         Manager.set_to_id('class_id', 'class_id', self.student_list, self.class_list)
         student_id = input("Enter Student ID: ")
-        student = next((s for s in self.student_list if s.student_id == student_id), None)
+        student_id = StudentValidator.validate_id(student_id, self.student_list, obj_type='student', is_required=True, is_key=False)
+        if student_id is None:
+            return
+        student = next((s for s in self.student_list if int(s.student_id) == student_id), None)
         if student:
+            Manager.set_to_reference('class_id', 'class_id', self.student_list, self.class_list)
             print(student)
+            Manager.set_to_id('class_id', 'class_id', self.student_list, self.class_list)
             print('*leave fields empty if you want current value*')
+            national_id = StudentValidator.validate_id(input('Enter National ID: '), self.student_list, obj_type='student', is_required=False, is_key=False, type='national')
+            if national_id is None:
+                return
+            first_name = StudentValidator.validate_name(input('Enter First Name: '))
+            if first_name is None:
+                return
+            last_name = StudentValidator.validate_name(input('Enter Last Name: '))
+            if last_name is None:
+                return
+            age = StudentValidator.validate_age(input('Enter Age: '), 10, 19)
+            if age is None:
+                return
+            grade_level = StudentValidator.validate_gl(input('Enter Grade Level: '))
+            if grade_level is None:
+                return
+            class_id = StudentValidator.validate_cid(input('Enter Class ID: '), self.class_list)
+            if class_id is None:
+                return
             fields = {
-                'national_id' : input('Enter National ID: '),
-                'first_name' : input('Enter First Name: '),
-                'last_name' : input('Enter Last Name: '),
-                'age' : input('Enter Age: '),
-                'grade_level' : input('Enter Grade Level: '),
-                'class_id' : input('Enter Class ID: '),
+                'national_id' : national_id,
+                'first_name' : first_name,
+                'last_name' : last_name,
+                'age' : age,
+                'grade_level' : grade_level,
+                'class_id' : class_id,
             }
+
             for field, value in fields.items():
                 if value:
                     if field == 'class_id':
@@ -124,12 +149,20 @@ class StudentManager(Manager):
                                 cls.students.append(student.student_id)
                         ClassFH.save_to_file(self.class_list)
                     setattr(student, field, value)
+
+
             StudentFH.save_to_file(self.student_list)
             Manager.set_to_reference('class_id', 'class_id', self.student_list, self.class_list)
+        else:
+            print('Student not found')
+            return
 
     def delete(self):
         Manager.set_to_id('class_id', 'class_id', self.student_list, self.class_list)
         student_id = input("Enter Student ID: ")
+        student_id = StudentValidator.validate_id(student_id, self.student_list, obj_type='student', is_required=True, is_key=False)
+        if student_id is None:
+            return
         student = next((s for s in self.student_list if s.student_id == student_id), None)
         if student:
             confirm = input(f'Are you sure to delete {student.first_name} {student.last_name} (Y/N): ').lower()
@@ -194,17 +227,40 @@ class TeacherManager(Manager):
     def __init__(self):
         self.teacher_list = []
         self.class_list = []
+        self.lesson_list = []
         TeacherFH.load_file(Teacher, self.teacher_list)
         ClassFH.load_file(Class, self.class_list)
+        LessonFH.load_file(Lesson, self.lesson_list)
 
     def add(self):
         personnel_code = input("Enter Personnel Code: ")
+        personnel_code = TeacherValidator.validate_id(personnel_code, self.teacher_list, 'teacher', is_required=True, is_key=True)
+        if personnel_code is None:
+            return
         national_id = input("Enter National ID: ")
+        national_id = TeacherValidator.validate_id(national_id, self.teacher_list, 'teacher', is_required=True, type='national')
+        if national_id is None:
+            return
         first_name = input("Enter First Name: ")
+        first_name = TeacherValidator.validate_name(first_name, is_required=True)
+        if first_name is None:
+            return
         last_name = input("Enter Last Name: ")
+        last_name = TeacherValidator.validate_name(last_name, is_required=True)
+        if last_name is None:
+            return
         age = input("Enter Age: ")
+        age = TeacherValidator.validate_age(age, 25, 50, is_required=True)
+        if age is None:
+            return
         lessons = input("Enter Lessons ID: ").split(',')
+        lessons = TeacherValidator.validate_lid(lessons, [int(lsn.lesson_id) for lsn in self.lesson_list], is_required=True)
+        if lessons is None:
+            return
         classes = input("Enter Classes ID: ").split(',')
+        classes = TeacherValidator.validate_cid(classes, [int(cls.class_id) for cls in self.class_list], is_required=True)
+        if classes is None:
+            return
         self.teacher_list.append(
             Teacher(
                 personnel_code, national_id, first_name, last_name, age, lessons, classes
@@ -227,40 +283,73 @@ class TeacherManager(Manager):
 
     def edit(self):
         personnel_code = input("Enter Personnel Code: ")
-        teacher = next((t for t in self.teacher_list if personnel_code == t.personnel_code), None)
+        personnel_code = TeacherValidator.validate_id(personnel_code, self.teacher_list, 'teacher', is_required=True, is_key=False)
+        if personnel_code is None:
+            return
+        teacher = next((t for t in self.teacher_list if personnel_code == int(t.personnel_code)), None)
         if teacher:
             print(teacher)
             print('*leave fields empty if you want current value*')
+            national_id = input("Enter National ID: ")
+            national_id = TeacherValidator.validate_id(national_id, self.teacher_list, 'teacher', is_required=False, type='national')
+            if national_id is None:
+                return
+            first_name = input("Enter First Name: ")
+            first_name = TeacherValidator.validate_name(first_name, is_required=False)
+            if first_name is None:
+                return
+            last_name = input("Enter Last Name: ")
+            last_name = TeacherValidator.validate_name(last_name, is_required=False)
+            if last_name is None:
+                return
+            age = input("Enter Age: ")
+            age = TeacherValidator.validate_age(age, 25, 50, is_required=False)
+            if age is None:
+                return
+            lessons = input("Enter Lessons ID: ").split(',')
+            lessons = TeacherValidator.validate_lid(lessons, [int(lsn.lesson_id) for lsn in self.lesson_list], is_required=False)
+            if lessons is None:
+                return
+            classes = input("Enter Classes ID: ").split(',')
+            classes = TeacherValidator.validate_cid(classes, [int(cls.class_id) for cls in self.class_list], is_required=False)
+            if classes is None:
+                return
             fields = {
-                'national_id' : input('Enter National ID: '),
-                'first_name' : input('Enter First Name: '),
-                'last_name' : input('Enter Last Name: '),
-                'age' : input('Enter Age: '),
-                'lessons' : input('Enter Lessons ID: ').split(','),
-                'classes' : input('Enter Classes ID: ').split(','),
+                'national_id' : national_id,
+                'first_name' : first_name,
+                'last_name' : last_name,
+                'age' : age,
+                'lessons' : lessons,
+                'classes' : classes,
             }
-        for field, value in fields.items():
-            if (field == 'lessons' or field == 'classes') and len(value) == 1 and value[0] == '':
-                value = ''
-            if value:
-                if field == 'classes':
-                    for cls in self.class_list:
-                        for id in teacher.classes:
-                            if cls.class_id == id:
-                                cls.teachers.remove(personnel_code)
-                        for id in value:
-                            if cls.class_id == id:
-                                if '' in cls.teachers:
-                                    cls.teachers.remove('')
-                                cls.teachers.append(personnel_code)
-                        ClassFH.save_to_file(self.class_list)
-                setattr(teacher, field, value)
-        print(teacher)
-        TeacherFH.save_to_file(self.teacher_list)
+            for field, value in fields.items():
+                if (field == 'lessons' or field == 'classes') and len(value) == 1 and value[0] == '':
+                    value = ''
+                if value:
+                    if field == 'classes':
+                        for cls in self.class_list:
+                            for id in teacher.classes:
+                                if cls.class_id == id:
+                                    cls.teachers.remove(personnel_code)
+                            for id in value:
+                                if cls.class_id == id:
+                                    if '' in cls.teachers:
+                                        cls.teachers.remove('')
+                                    cls.teachers.append(personnel_code)
+                            ClassFH.save_to_file(self.class_list)
+                    setattr(teacher, field, value)
+            print(teacher)
+            TeacherFH.save_to_file(self.teacher_list)
+        else:
+            print('Teacher not found')
+            return
 
     def delete(self):
         personnel_code = input("Enter Personnel Code: ")
-        teacher = next((t for t in self.teacher_list if personnel_code == t.personnel_code), None)
+        personnel_code = TeacherValidator.validate_id(personnel_code, self.teacher_list, 'teacher', is_required=True, is_key=False)
+        if personnel_code is None:
+            return
+        teacher = next((t for t in self.teacher_list if personnel_code == int(t.personnel_code)), None)
         if teacher:
             confirm = input(f'Are you sure to delete {teacher.first_name} {teacher.last_name} (Y/N): ').lower()
             if confirm == 'n':
@@ -334,8 +423,17 @@ class ClassManager(Manager):
         self.set_teachers()
     def add(self):
         class_id = input("Enter Class ID: ")
+        class_id = ClassValidator.validate_cid(class_id, self.class_list, is_required=True)
+        if class_id is None:
+            return
         class_name = input("Enter Class Name: ")
+        class_name = ClassValidator.validate_cname(class_name, is_required=True)
+        if class_name is None:
+            return
         capacity = input("Enter Class Capacity: ")
+        capacity = ClassValidator.validate_capacity(capacity, is_required=True)
+        if capacity is None:
+            return
         self.class_list.append(
             Class(
                 class_id, class_name, capacity
@@ -372,13 +470,22 @@ class ClassManager(Manager):
 
     def edit(self):
         class_id = input("Enter Class ID: ")
-        cls = next((c for c in self.class_list if class_id == c.class_id), None)
+        class_id = ClassValidator.validate_cid(class_id, self.class_list, is_required=True, is_key=False)
+        if class_id is None:
+            return
+        cls = next((c for c in self.class_list if class_id == int(c.class_id)), None)
         if cls:
             print(cls)
             print('*leave fields empty if you want current value*')
+            class_name = ClassValidator.validate_cname(input('Enter Class Name: '))
+            if class_name is None:
+                return
+            capacity = ClassValidator.validate_capacity(input('Enter Class Capacity: '))
+            if capacity is None:
+                return
             fields = {
-                'class_name' : input('Enter Class Name: '),
-                'capacity' : input('Enter Class Capacity: '),
+                'class_name' : class_name,
+                'capacity' : capacity,
             }
             for field, value in fields.items():
                 if value:
@@ -386,11 +493,14 @@ class ClassManager(Manager):
                     ClassFH.save_to_file(self.class_list)
         else:
             print('No Class found')
+            return
 
     def delete(self):
         class_id = input("Enter Class ID: ")
-        cls = next((c for c in self.class_list if class_id == c.class_id), None)
-
+        class_id = ClassValidator.validate_cid(class_id, self.class_list, is_required=True, is_key=False)
+        if class_id is None:
+            return
+        cls = next((c for c in self.class_list if class_id == int(c.class_id)), None)
         if cls:
             confirm = input(f'Are you sure to delete {cls.class_name}  (Y/N): ').lower()
             if confirm == 'n':
@@ -436,8 +546,10 @@ class ClassManager(Manager):
 
     def show_students(self):
         class_id = input("Enter Class ID: ")
-        cls = next((c for c in self.class_list if class_id == c.class_id), None)
-
+        class_id = ClassValidator.validate_cid(class_id, self.class_list, is_required=True, is_key=False)
+        if class_id is None:
+            return
+        cls = next((c for c in self.class_list if class_id == int(c.class_id)), None)
         if cls:
             students_list = []
             StudentFH.load_file(Student, students_list)
@@ -455,10 +567,13 @@ class ClassManager(Manager):
         else:
             print('No Class found')
 
+
     def show_teachers(self):
         class_id = input("Enter Class ID: ")
-        cls = next((c for c in self.class_list if class_id == c.class_id), None)
-
+        class_id = ClassValidator.validate_cid(class_id, self.class_list, is_required=True, is_key=False)
+        if class_id is None:
+            return
+        cls = next((c for c in self.class_list if class_id == int(c.class_id)), None)
         if cls:
             teachers_list = []
             TeacherFH.load_file(Teacher, teachers_list)
@@ -474,6 +589,7 @@ class ClassManager(Manager):
             print('-' * 20)
         else:
             print('No Class found')
+        return
 
 class LessonManager(Manager):
     def __init__(self):
@@ -482,21 +598,39 @@ class LessonManager(Manager):
 
     def add(self):
         lesson_id = input("Enter Lesson ID: ")
+        lesson_id = LessonValidator.validate_lid(lesson_id, self.lesson_list, is_required=True, is_key=True)
+        if lesson_id is None:
+            return
         lesson_name = input("Enter Lesson Name: ")
+        lesson_name = LessonValidator.validate_lname(lesson_name, is_required=True)
+        if lesson_name is None:
+            return
         units = input("Enter Units: ")
+        units = LessonValidator.validate_units(units, is_required=True)
+        if units is None:
+            return
         self.lesson_list.append(
             Lesson(lesson_id, lesson_name, units)
         )
         LessonFH.save_to_file(self.lesson_list)
     def edit(self):
         lesson_id = input("Enter Lesson ID: ")
-        lesson = next((l for l in self.lesson_list if l.lesson_id == lesson_id), None)
+        lesson_id = LessonValidator.validate_lid(lesson_id, self.lesson_list, is_required=True, is_key=False)
+        if lesson_id is None:
+            return
+        lesson = next((l for l in self.lesson_list if int(l.lesson_id) == lesson_id), None)
         if lesson:
             print(lesson)
             print('*leave fields empty if you want current value*')
+            lesson_name = LessonValidator.validate_lname(input('Enter Lesson Name: '))
+            if lesson_name is None:
+                return
+            units = LessonValidator.validate_units(input('Enter Units: '))
+            if units is None:
+                return
             fields = {
-                'lesson_name' : input('Enter Lesson Name: '),
-                'units' : input('Enter Units: ')
+                'lesson_name' : lesson_name,
+                'units' : units
             }
             for field, value in fields.items():
                 if value:
@@ -504,10 +638,14 @@ class LessonManager(Manager):
                     LessonFH.save_to_file(self.lesson_list)
         else:
             print('No Lesson found')
+            return
 
     def delete(self):
         lesson_id = input("Enter Lesson ID: ")
-        lesson = next((l for l in self.lesson_list if l.lesson_id == lesson_id), None)
+        lesson_id = LessonValidator.validate_lid(lesson_id, self.lesson_list, is_required=True, is_key=False)
+        if lesson_id is None:
+            return
+        lesson = next((l for l in self.lesson_list if int(l.lesson_id) == lesson_id), None)
         if lesson:
             confirm = input(f'Are you sure to delete {lesson.lesson_name}  (Y/N): ').lower()
             if confirm == 'n':
@@ -520,6 +658,7 @@ class LessonManager(Manager):
                 print('Invalid input')
         else:
             print('No Lesson found')
+            return
 
     def search(self):
         get_fields = {
@@ -567,6 +706,9 @@ class ReportCardManager(Manager):
 
     def add(self):
         student_id = input("Enter Student ID: ")
+        student_id = RCValidator.validate_sid(student_id)
+        if student_id is None:
+            return
         student = next((s for s in self._students_list if s.student_id == student_id), None)
         if student:
             lessons_id = []
@@ -584,6 +726,9 @@ class ReportCardManager(Manager):
                             lessons.append(lesson)
             for lesson in lessons:
                 grade = input(f"Enter {lesson.lesson_name}'s Grade: ")
+                grade = RCValidator.validate_grade(grade)
+                if grade is None:
+                    return
                 grades.append(grade)
 
             self.rc_list.append(
@@ -592,13 +737,19 @@ class ReportCardManager(Manager):
                 )
             )
             ReportCardFH.save_to_file(self.rc_list)
+        else:
+            print('Student not found')
+            return
 
     def edit(self):
         pass
 
     def delete(self):
         student_id = input("Enter Student ID: ")
-        student = next((s for s in self._students_list if s.student_id == student_id), None)
+        student_id = StudentValidator.validate_id(student_id, self._students_list, obj_type='student', is_required=True,is_key=False)
+        if student_id is None:
+            return
+        student = next((s for s in self._students_list if int(s.student_id) == student_id), None)
         rc = next((rc for rc in self.rc_list if rc.student == student_id), None)
         if student and rc:
             confirm = input(f'Are you sure to delete {student.first_name} {student.last_name}\'s Report Card  (Y/N): ').lower()
@@ -613,12 +764,16 @@ class ReportCardManager(Manager):
         else:
             print('No Report Card found')
 
+
     def search(self):
         pass
 
     def show(self):
         student_id = input("Enter Student ID: ")
-        student = next((s for s in self._students_list if s.student_id == student_id), None)
+        student_id = StudentValidator.validate_id(student_id, self._students_list, obj_type='student', is_required=True,is_key=False)
+        if student_id is None:
+            return
+        student = next((s for s in self._students_list if int(s.student_id) == student_id), None)
         if student:
             lessons_id = []
             lessons = []
@@ -638,3 +793,5 @@ class ReportCardManager(Manager):
                     grades = rc.grades
             for lesson,grade in zip(lessons, grades):
                 print(f"{lesson.lesson_name}'s Grade: {grade}")
+        else:
+            print('Student not found')
