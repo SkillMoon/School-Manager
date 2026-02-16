@@ -1,16 +1,12 @@
-from school_manager.managers import *
+from school_manager.menu import CLI
 
 if __name__ == '__main__':
-    std_manager = StudentManager()
-    class_manager = ClassManager()
-    teacher_manager = TeacherManager()
-    lesson_manager = LessonManager()
-    rc_manager = ReportCardManager()
-
-    rc_manager.show()
-    # lesson_manager.delete()
-    # class_manager.show_teachers()
-    # std_manager.search()
-    # teacher_manager.edit()
+    menu = CLI()
+    try:
+        menu.run()
+    except Exception as e:
+        print(f'[ERROR] {e}')
+        input('press ENTER to continue...')
+        menu.run()
 
 
