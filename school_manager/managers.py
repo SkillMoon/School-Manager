@@ -1,4 +1,4 @@
-from school_manager.Validator import StudentValidator, TeacherValidator, ClassValidator, LessonValidator, RCValidator
+from school_manager.validator import StudentValidator, TeacherValidator, ClassValidator, LessonValidator, RCValidator
 from school_manager.storage_handler import *
 from school_manager.models import *
 from copy import deepcopy
@@ -58,7 +58,7 @@ class StudentManager(Manager):
             input('Press ENTER to continue...')
             return
         national_id = input("-Enter National ID: ")
-        national_id = StudentValidator.validate_id(national_id, self.student_list, obj_type='student', is_required=False, type='id')
+        national_id = StudentValidator.validate_id(national_id, self.student_list, obj_type='student', is_required=False, type='national')
         if national_id is None:
             input('Press ENTER to continue...')
             return
@@ -858,7 +858,6 @@ class ReportCardManager(Manager):
         self._class_list = []
         self._teachers_list = []
         self._lessons_list = []
-        # Manager.set_to_id('class_id', 'class_id', self._students_list, self._class_list)
         ReportCardFH.load_file(ReportCard, self.rc_list)
         StudentFH.load_file(Student, self._students_list)
         ClassFH.load_file(Class, self._class_list)

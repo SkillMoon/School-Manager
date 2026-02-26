@@ -10,8 +10,9 @@ BAN_CHARS_FOR_INT = ['!', '@', '#',
 class UserBasicValidator(ABC):
     @staticmethod
     def validate_id(id, object_list, obj_type,is_required=False, is_key=True, type='id'):
+        id = str(id).strip()
         if is_required:
-            id = str(id).strip()
+
             if not id:
                 print('[ERROR] This field is required.')
                 return None
@@ -69,9 +70,8 @@ class UserBasicValidator(ABC):
 
     @staticmethod
     def validate_name(name, is_required=False):
-
+        name = str(name).strip()
         if is_required:
-            name = str(name).strip()
             if not name:
                 print('[ERROR] This field is required.')
                 return None
@@ -80,16 +80,17 @@ class UserBasicValidator(ABC):
                     print("[ERROR] Can not use numbers and signs in name.")
                     return None
         else:
-            for char in BAN_CHARS_FOR_STR:
-                if char in name:
-                    print("[ERROR] Can not use numbers and signs in name.")
-                    return None
+            if name:
+                for char in BAN_CHARS_FOR_STR:
+                    if char in name:
+                        print("[ERROR] Can not use numbers and signs in name.")
+                        return None
         return name
 
     @staticmethod
     def validate_age(age, min, max, is_required=False):
+        age = str(age).strip()
         if is_required:
-            age = str(age).strip()
             if not age:
                 print('[ERROR] This field is required.')
                 return None
@@ -116,8 +117,8 @@ class UserBasicValidator(ABC):
 class StudentValidator(UserBasicValidator):
     @staticmethod
     def validate_gl(grade_level, is_required=False):
+        grade_level = str(grade_level).strip()
         if is_required:
-            grade_level = str(grade_level).strip()
             if not grade_level:
                 print('[ERROR] This field is required.')
                 return None
@@ -131,7 +132,6 @@ class StudentValidator(UserBasicValidator):
                 return None
         else:
             if grade_level:
-                grade_level = str(grade_level).strip()
                 for i in grade_level:
                     if i.isalpha() or i in BAN_CHARS_FOR_INT:
                         print('[ERROR] Grade level must be a number.')
@@ -144,8 +144,8 @@ class StudentValidator(UserBasicValidator):
 
     @staticmethod
     def validate_cid(class_id, class_list, is_required=False):
+        class_id = str(class_id).strip()
         if is_required:
-            class_id = str(class_id).strip()
             if not class_id:
                 print('[ERROR] This field is required.')
                 return None
@@ -159,7 +159,6 @@ class StudentValidator(UserBasicValidator):
                 return None
         else:
             if class_id:
-                class_id = str(class_id).strip()
                 for i in class_id:
                     if i.isalpha() or i in BAN_CHARS_FOR_INT:
                         print('[ERROR] Class ID must be a number.')
@@ -172,8 +171,8 @@ class StudentValidator(UserBasicValidator):
 class TeacherValidator(UserBasicValidator):
     @staticmethod
     def validate_lid(lesson_id, lesson_list, is_required=False, is_key=True):
+        lesson_id[0] = str(lesson_id[0].strip())
         if is_required:
-            lesson_id[0] = str(lesson_id[0].strip())
             if not lesson_id[0]:
                 print('[ERROR] This field is required.')
                 return None
@@ -200,8 +199,8 @@ class TeacherValidator(UserBasicValidator):
 
     @staticmethod
     def validate_cid(class_id, class_list, is_required=False, is_key=True):
+        class_id[0] = str(class_id[0].strip())
         if is_required:
-            class_id[0] = str(class_id[0].strip())
             if not class_id[0]:
                 print('[ERROR] This field is required.')
                 return None
@@ -216,7 +215,6 @@ class TeacherValidator(UserBasicValidator):
                     return None
         else:
             if class_id[0]:
-                class_id[0] = str(class_id[0].strip())
                 for i in class_id[0]:
                     if i.isalpha() or i in BAN_CHARS_FOR_INT:
                         print('[ERROR] Class ID must be a number.')
@@ -232,8 +230,8 @@ class ClassValidator:
 
     @staticmethod
     def validate_cid(cid, class_list, is_required=False, is_key=True):
+        cid = str(cid).strip()
         if is_required:
-            cid = str(cid).strip()
             if not cid:
                 print('[ERROR] This field is required.')
                 return None
@@ -249,7 +247,6 @@ class ClassValidator:
                         return None
         else:
             if cid:
-                cid = str(cid).strip()
                 for i in cid:
                     if i.isalpha() or i in BAN_CHARS_FOR_INT:
                         print('[ERROR] Class ID must be a number.')
@@ -264,8 +261,8 @@ class ClassValidator:
 
     @staticmethod
     def validate_cname(class_name, is_required=False):
+        class_name = str(class_name).strip()
         if is_required:
-            class_name = str(class_name).strip()
             if not class_name:
                 print('[ERROR] This field is required.')
                 return None
@@ -275,7 +272,6 @@ class ClassValidator:
                     return None
         else:
             if class_name:
-                class_name = str(class_name).strip()
                 for char in class_name:
                     if char in BAN_CHARS_FOR_STR:
                         print("[ERROR] Can not use numbers and signs in name.")
@@ -284,8 +280,8 @@ class ClassValidator:
 
     @staticmethod
     def validate_capacity(capacity, is_required=False):
+        capacity = str(capacity).strip()
         if is_required:
-            capacity = str(capacity).strip()
             if not capacity:
                 print('[ERROR] This field is required.')
                 return None
@@ -306,8 +302,8 @@ class ClassValidator:
 class LessonValidator:
     @staticmethod
     def validate_lid(lid, lessons_list,is_required=False, is_key=True):
+        lid = str(lid).strip()
         if is_required:
-            lid = str(lid).strip()
             if not lid:
                 print('[ERROR] This field is required.')
                 return None
@@ -336,8 +332,8 @@ class LessonValidator:
         return lid
     @staticmethod
     def validate_lname(lesson_name, is_required=False):
+        lesson_name = str(lesson_name).strip()
         if is_required:
-            lesson_name = str(lesson_name).strip()
             if not lesson_name:
                 print('[ERROR] This field is required.')
                 return None
@@ -346,7 +342,6 @@ class LessonValidator:
                     print("[ERROR] Can not use numbers and signs in name.")
                     return None
         else:
-            lesson_name = str(lesson_name).strip()
             for char in lesson_name:
                 if char in BAN_CHARS_FOR_STR:
                     print("[ERROR] Can not use numbers and signs in name.")
@@ -355,8 +350,8 @@ class LessonValidator:
 
     @staticmethod
     def validate_units(units, is_required=False):
+        units = str(units).strip()
         if is_required:
-            units = str(units).strip()
             if not units:
                 print('[ERROR] This field is required.')
                 return None
@@ -405,6 +400,6 @@ class RCValidator:
                 return None
         grade = float(grade)
         if grade <= -0.9 or grade >= 20.1:
-            print('[ERROR] Grade must be between 1 and 20.')
+            print('[ERROR] Grade must be between 0 and 20.')
             return None
         return grade
